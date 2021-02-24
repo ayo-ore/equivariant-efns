@@ -71,7 +71,7 @@ if not args.dry:
         labels_train, labels_val, labels_test,
         _, __, indices_test)\
         = data_split(data,labels, np.arange(data.shape[0]), train=-1, val=val_frac, test=test_frac, shuffle=True)
-    elif evpfnid in ('full', 'expt'):
+    elif evpfnid:
         (mom_train, mom_val, mom_test,
         pid_train, pid_val, pid_test,
         labels_train, labels_val, labels_test,
