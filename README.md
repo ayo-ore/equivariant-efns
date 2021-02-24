@@ -6,7 +6,8 @@ An implementation of IRC safe permutation-equivariant layers in Energy Flow Netw
 [arXiv:2012.00964 [hep-ph]](https://arxiv.org/abs/2012.00964)
 
 ## Python 3 dependencies
+- [numpy 1.16.2](https://numpy.org/)
 - [keras ](https://keras.io/)
 - [tensorflow 1.13.1](https://www.tensorflow.org/)
 - [energyflow 1.0.2](https://energyflow.network/)
-- 
+- [pyjet 1.6.0](https://github.com/scikit-hep/pyjet)
