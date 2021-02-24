@@ -9,5 +9,12 @@ An implementation of IRC safe permutation-equivariant layers in Energy Flow Netw
 - [numpy 1.16.2](https://numpy.org/)
 - [keras ](https://keras.io/)
 - [tensorflow 1.13.1](https://www.tensorflow.org/)
+- [sklearn 0.22.1](https://scikit-learn.org/stable/)
 - [energyflow 1.0.2](https://energyflow.network/)
 - [pyjet 1.6.0](https://github.com/scikit-hep/pyjet)
+
+## Data format
+Data should be stored in `numpy.ndarray` format with shape `(num_jets, max_constituents, 4)`. The last dimension holds constituent information 
+
+## Usage
+explain arguments
