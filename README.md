@@ -2,7 +2,7 @@
 An implementation of IRC safe permutation-equivariant layers in Energy Flow Networks.
 
 ##### References
-[1] M. J. Dolan and A. Ore, Equivariant energy flow networks for jet tagging,
+[1] M. J. Dolan and A. Ore, Equivariant Energy Flow Networks for jet tagging,
 [arXiv:2012.00964 [hep-ph]](https://arxiv.org/abs/2012.00964)
 
 ## Python 3 dependencies
