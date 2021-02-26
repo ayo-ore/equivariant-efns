@@ -14,7 +14,7 @@ An implementation of IRC safe permutation-equivariant layers in Energy Flow Netw
 - [pyjet 1.6.0](https://github.com/scikit-hep/pyjet)
 
 ## Data format
-Data should be stored in `numpy.ndarray` format with shape `(num_jets, max_constituents, 5)`. The last dimension holds constituent information in the format \[p_T,y,\phi,m,\texttt{pdg_id}\]
+Data should be stored in `numpy.ndarray` format with shape `(num_jets, max_constituents, 5)`. The last dimension holds constituent information in the format $p_T,y,\phi,m,\texttt{pdg_id}\$
 
 ## Usage
 explain arguments
