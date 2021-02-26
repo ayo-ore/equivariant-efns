@@ -19,26 +19,26 @@ Data should be stored in a `.npz` file containing jet examples as a `numpy.ndarr
 ## Usage
 The script `train-ev-model.py` is used to train one of the EV-EFN, EV-PFN or EV-PFN-ID models and may be passed the following arguments:
 
-  -`dataset`: Path to the data in `.npz` format as described above. [required]
-  -`model`: Equivariant archirecture to train. One of (`'ev-efn'`, `'ev-pfn'`, `'ev-pfn'id`). \[Default=`'ev-efn'`\]
-  -`epochs`: Number of epochs to train model.
-  -`batch_size`: Size of data mini-batches.
-  -`optimizer`: Keras optimisation algorithm to use.
-  -`loss`: Keras loss function to optimise.
-  -`equi_act`: Keras activation applied to equivariant layers.
-  -`ppm_sizes`: List of layer sizes for the Phi network.
-  -`equi_channels`: List of output channels for the equivariant layers
-  -`f_sizes`: List of layer sizes for the F network.
-  -`lambda_zero`: Enforce Lambda=0 in equivairant layers.
-  -`gamma_zero`: Enforce Gamma=0 in equivairant layers.
-  -`projection`: Projection operation to pool output of equivariant layers. One of (`'sum'`, `'max'`).
-  -`equi_type`: Equivariant operation specification. One of (`'sum'`, `'max'`, `'irc'`). 
-  -`dropout`: Dropout value to apply to layers in F. A value of zero corresponds to no dropout.
-  -`bigtest`: Split data into train and test only.
-  -`dry`: Run without training or saving.
-  -`output`: Directory to save training outputs.
-  -`filename`: 
-
+  - `dataset`: Path to the data in `.npz` format as described above. [required]
+  - `model`: Equivariant archirecture to train. One of (`'ev-efn'`, `'ev-pfn'`, `'ev-pfn'id`). \[Default=`'ev-efn'`\]
+  - `epochs`: Number of epochs to train model.
+  - `batch_size`: Size of data mini-batches.
+  - `optimizer`: Keras optimisation algorithm to use.
+  - `loss`: Keras loss function to optimise.
+  - `equi_act`: Keras activation applied to equivariant layers.
+  - `ppm_sizes`: List of layer sizes for the Phi network.
+  - `equi_channels`: List of output channels for the equivariant layers
+  - `f_sizes`: List of layer sizes for the F network.
+  - `lambda_zero`: Enforce Lambda=0 in equivairant layers.
+  - `gamma_zero`: Enforce Gamma=0 in equivairant layers.
+  - `projection`: Projection operation to pool output of equivariant layers. One of (`'sum'`, `'max'`).
+  - `equi_type`: Equivariant operation specification. One of (`'sum'`, `'max'`, `'irc'`). 
+  - `dropout`: Dropout value to apply to layers in F. A value of zero corresponds to no dropout.
+  - `bigtest`: Split data into train and test only.
+  - `dry`: Run without training or saving.
+  - `output`: Directory to save training outputs.
+  - `filename`: 
+ 
    - `datadir`: Directory containing the *converted* top-tagging files.
     - `maxdim`: Maximum dimensionality of tensors produced in the network.
     - `max-zf`: Maximum degree of zonal functions used in tensor decompositions.
