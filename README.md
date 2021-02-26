@@ -2,7 +2,7 @@
 An implementation of IRC safe permutation-equivariant layers in Energy Flow Networks.
 
 ##### References
-[1] M. J. Dolan and A. Ore, Equivariant Energy Flow Networks for jet tagging,
+[1] M. J. Dolan and A. Ore, _Equivariant Energy Flow Networks for jet tagging_,
 [arXiv:2012.00964 [hep-ph]](https://arxiv.org/abs/2012.00964)
 
 ## Python 3 dependencies
@@ -14,7 +14,7 @@ An implementation of IRC safe permutation-equivariant layers in Energy Flow Netw
 - [pyjet 1.6.0](https://github.com/scikit-hep/pyjet)
 
 ## Data format
-Data should be stored in `numpy.ndarray` format with shape `(num_jets, max_constituents, 5)`. The last dimension holds constituent information in the format \((p_T,y,\phi,m,\texttt{pdg_id})\)
+Data should be stored in `.npz` format containing jet examples as a `numpy.ndarray` with shape `(num_jets, max_constituents, 5)` at the key `'data'` and binary jet labels as a `numpy.array` of length `num_jets`. The last dimension of the jet array should hold constituent information in the format `(pt, y, phi, m, pdg_id)`.
 
 ## Usage
 explain arguments
