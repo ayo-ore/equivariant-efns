@@ -13,7 +13,7 @@ An implementation of IRC safe permutation-equivariant layers in Energy Flow Netw
 - [pyjet 1.6.0](https://github.com/scikit-hep/pyjet)
 
 ## Data format
-Data should be stored in a `.npz` file containing jet examples as a `numpy.ndarray` with shape `(num_jets, max_constituents, 5)` at key `'data'` and binary jet labels as a `numpy.ndarray` with shape `(num_jets,)` at key `'labels`. The last dimension of the examples array should hold constituent information in the format `(pt, y, phi, m, pid)`, where `pid` is an integer in the range `\[0,n-1\]` representing the identity of the particle from `n` categories (Absent particle represented by `-1`).
+Data should be stored in a `.npz` file containing jet examples as a `numpy.ndarray` with shape `(num_jets, max_constituents, 5)` at key `'data'` and binary jet labels as a `numpy.ndarray` with shape `(num_jets,)` at key `'labels'`. The last dimension of the examples array should hold constituent information in the format `(pt, y, phi, m, pid)`, where `pid` is an integer in the range `\[0,n-1\]` representing the identity of the particle from `n` categories (Absent particle represented by `-1`).
 
 ## Usage
 The script `train-ev-model.py` is used to train one of the EV-EFN, EV-PFN or EV-PFN-ID models and may be passed the following arguments:
