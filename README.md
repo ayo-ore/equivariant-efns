@@ -18,7 +18,7 @@ Data should be stored in a `.npz` file containing jet examples as a `numpy.ndarr
 ## Usage
 The script `train-ev-model.py` is used to train one of the EV-EFN, EV-PFN or EV-PFN-ID models and may be passed the following arguments:
 
-  - `dataset`: Path to the data in `.npz` format as described above. \[required\]
+  - **`dataset`:** Path to the data in `.npz` format as described above. \[required\]
   - `model`: Equivariant archirecture to train. One of (`'ev-efn'`, `'ev-pfn'`, `'ev-pfn-id'`). \[default = `'ev-efn'`\]
   - `epochs`: Number of epochs to train model. \[default = `30`\]
   - `batch_size`: Size of data mini-batches. \[default = `480`\]
@@ -28,7 +28,7 @@ The script `train-ev-model.py` is used to train one of the EV-EFN, EV-PFN or EV-
   - `ppm_sizes`: List of layer sizes for the Phi network. \[default = `100 100 128`\]
   - `equi_channels`: List of output channels for the equivariant layers \[default = `100 100`\]
   - `f_sizes`: List of layer sizes for the F network. \[default = `100 100 100`\]
-  - `projection`: Projection operation to pool output of equivariant layers. One of (`'sum'`, `'max'`). \[default = `'sum'`\]
+  - `projection`: Projection operation to pool output of equivariant layers. One of (`'sum'`, `'max'`). \[default = `'irc'`\]
   - `equi_type`: Equivariant operation specification. One of (`'sum'`, `'max'`, `'irc'`).  \[default = `'sum'`\]
   - `dropout`: Dropout value to apply to layers in F. A value of zero corresponds to no dropout. \[default = `0.0`\]
   - `output`: Directory to save training outputs. \[default = `os.getcwd()`\]
@@ -41,3 +41,6 @@ The script `train-ev-model.py` is used to train one of the EV-EFN, EV-PFN or EV-
 
 
 On completion of training, the following outputs are saved:
+  - `<args.output>/<args.filename>_model.h5`: The trained `keras.models.Model` saved in `hdf5` format.
+  - `<args.output>/<args.filename>_metrics.npz`: The (validation) loss and (validation) accuracy history. Access via keys (`val_`)`loss` and (`val_`)`acc` respectively.
+  - `<args.output>/<args.filename>_roc.npz`: The true positive and false positive rates on the test split for constructing the ROC curve. Access via keys `tp` and `fp` respectively.
