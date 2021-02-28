@@ -40,7 +40,8 @@ The script `train-ev-model.py` is used to train one of the EV-EFN, EV-PFN or EV-
   - `dry`: Whether or not to run without training or saving.
 
 
+## Output
 On completion of training, the following outputs are saved:
   - `<args.output>/<args.filename>_model.h5`: The trained `keras.models.Model` saved in `hdf5` format.
-  - `<args.output>/<args.filename>_metrics.npz`: The (validation) loss and (validation) accuracy history. Access via keys (`val_`)`loss` and (`val_`)`acc` respectively.
-  - `<args.output>/<args.filename>_roc.npz`: The true positive and false positive rates on the test split for constructing the ROC curve. Access via keys `tp` and `fp` respectively.
+  - `<args.output>/<args.filename>_history.npz`: The (validation) loss and (validation) accuracy history. Access via keys (`val_`)`loss` and (`val_`)`acc` respectively.
+  - `<args.output>/<args.filename>_roc.npz`: The true positive and false positive rates on the test split for constructing the ROC curve and other metrics. Access via keys `tp` and `fp` respectively.
