@@ -7,7 +7,7 @@ import numpy as np
 import os
 from sklearn.metrics import roc_curve
 
-from layers import EquivariantLayer
+from nn import EquivariantLayer, EquivariantModel
 from data import preprocess
 
 parser = argparse.ArgumentParser()
@@ -34,6 +34,7 @@ parser.add_argument('--filename', type=str, default='output', help='Filename for
 args = parser.parse_args()
 
 evefn, evpfn, evpfnid = (args.model==x for x in ('ev-efn', 'ev-pfn', 'ev-pfn-id'))
+tf.keras.backend.set_floatx('float64')
 
 # check option compatibility
 if evefn:
@@ -50,6 +51,7 @@ if evpfn:
 
 print(args)
 
+
 # load data
 print('Loading data...')
 if not args.dry:
@@ -58,6 +60,7 @@ if not args.dry:
     labels = data_file['labels']
     labels = to_categorical(labels, num_classes=2)
 print('Done')
+
 
 # preprocess data
 print('Pre-processing events...')
@@ -74,7 +77,7 @@ if not args.dry:
 print('Done')
 
 
-# split datasets
+# create train/val/test splits
 print('Splitting datasets...')
 if not args.dry:
     val_frac, test_frac = (5, 0.25) if args.bigtest else (0.10, 0.15)
@@ -83,102 +86,45 @@ if not args.dry:
         labels_train, labels_val, labels_test,
         _, __, indices_test)\
         = data_split(data,labels, np.arange(data.shape[0]), train=-1, val=val_frac, test=test_frac, shuffle=True)
+        trainX, valX = train, val
     elif evpfnid:
         (mom_train, mom_val, mom_test,
         pid_train, pid_val, pid_test,
         labels_train, labels_val, labels_test,
         _, __, indices_test)\
         = data_split(data[:,:,:3], data[:,:,3], labels, np.arange(data.shape[0]), train=-1, val=val_frac, test=test_frac, shuffle=True)
+        trainX, valX = [mom_train, pid_train]
     else:
         (z_train, z_val, z_test,
         p_train, p_val, p_test,
         labels_train, labels_val, labels_test,
         _, __, indices_test)\
         = data_split(data[:,:,0], data[:,:,1:], labels, np.arange(data.shape[0]), train=-1, val=val_frac, test=test_frac, shuffle=True)
+        trainX, valX = [z_train, p_train], [z_val, p_val]
 print('Done')
 
-
-# build model
-ppm_layers = []
-if evpfn or evpfnid:
-    inputs = tf.keras.Input(shape=(None,3), name='momentum')
-    if evpfnid:
-        inputs = [inputs] + [tf.keras.Input(shape=(None,), name='pid-number')]
-        encoder = tf.keras.layers.Lambda(lambda x: tf.concatenate([x[0], tf.one_hot(tf.cast(x[1],'int64'),14)]), name='particle-info')
-    ppm_layers.append(
-        tf.keras.layers.TimeDistributed(tf.keras.layers.Dense(args.ppm_sizes[0], activation='relu', kernel_initializer=tf.keras.initializers.HeUniform()),name='ppm-layer-1')(encoder(inputs) if evpfnid else inputs)
-    )
-elif evefn:
-    z = tf.keras.Input(shape=(None,), name='z-input')
-    yphi = tf.keras.Input(shape=(None,2), name='y-phi-input')
-    inputs = [z,yphi]
-    ppm_layers.append(
-        tf.keras.layers.TimeDistributed(tf.keras.layers.Dense(args.ppm_sizes[0], activation='relu', kernel_initializer=tf.keras.initializers.HeUniform()), name='ppm-layer-1')(yphi)
-    )
-else:
-    print('Not implemented')
-for i in range(1,len(args.ppm_sizes)):
-    ppm_layers.append(
-        tf.keras.layers.TimeDistributed(tf.keras.layers.Dense(args.ppm_sizes[i], activation='relu', kernel_initializer=tf.keras.initializers.HeUniform()), name=f'ppm-layer-{i+1}')(ppm_layers[i-1])
-    )
-equi_layers = [
-    EquivariantLayer(
-        args.equi_channels[0],
-        width=140 if args.dry else data.shape[-2],
-        variation=args.equi_type,
-        activation=args.equi_act,
+# build and fit model
+print('Building model...')
+NN = EquivariantModel(
+        model=args.model,
+        ppm_sizes=args.ppm_sizes,
+        equi_channels=args.equi_channels,
+        equi_type=args.equi_type,
+        projection=args.projection,
+        f_sizes=args.f_sizes,
         lambda_zero=args.lambda_zero,
         gamma_zero=args.gamma_zero,
-        name=f'{args.equi_type}-equivariant-1'
-    )(
-        [ppm_layers[-1],z] if evefn else ppm_layers[-1]
-    )
-]
-for i in range(1,len(args.equi_channels)):
-    equi_layers.append(
-        EquivariantLayer(
-            args.equi_channels[i],
-            width=140 if args.dry else data.shape[-2],
-            variation=args.equi_type,
-            activation=args.equi_act,
-            lambda_zero=args.lambda_zero,
-            gamma_zero=args.gamma_zero,
-            name=f'{args.equi_type}-equivariant-{i+1}'
-        )(
-            [equi_layers[i-1],z] if evefn else equi_layers[i-1]
-        )
-    )
-z_weighting  = tf.keras.layers.Lambda(lambda y: tf.expand_dims(tf.einsum('ij,ijk->ik',y[1],y[0]),-2), name='z-weighting')
-proj = (
-         tf.keras.layers.Lambda(lambda x: tf.reduce_max(x,axis=1), name='maxpooling') if args.projection=='max'
-    else tf.keras.layers.Lambda(lambda x: tf.reduce_sum(x,axis=1), name='summation') if args.projection=='sum'
-    else None
+        equi_act=args.equi_act,
+        dropout=args.dropout
 )
-obs = proj(z_weighting([equi_layers[-1],z]) if evefn else equi_layers[-1])
-F_layers = [
-    tf.keras.layers.Dropout(args.dropout)(
-        tf.keras.layers.Dense(args.f_sizes[0], activation='relu', kernel_initializer=tf.keras.initializers.HeUniform(), name='F-layer-1')(obs)
-    )
-]
-for i in range(1,len(args.f_sizes)):
-    F_layers.append(
-        tf.keras.layers.Dropout(args.dropout, name=f'dropout-{i}')(
-            tf.keras.layers.Dense(args.f_sizes[i], activation='relu', kernel_initializer=tf.keras.initializers.HeUniform(), name=f'F-layer-{i+1}')(F_layers[i-1])
-        )
-    )
-out = tf.keras.layers.Dense(2, activation='softmax', kernel_initializer=tf.keras.initializers.HeUniform(), name='model-output')(F_layers[-1])
-
-model = tf.keras.models.Model(inputs=inputs, outputs=out)
-model.summary()
-model.compile(optimizer=args.optimizer, loss=args.loss, metrics=['acc'])
-
-
-# train model
+NN.compile(optimizer=args.optimizer, loss=args.loss, metrics='acc')
+input_shape = [tuple([args.batch_size]) + x.shape[1:] for x in trainX] if isinstance(trainX,list) else tuple([args.batch_size]) + trainX.shape[1:]
+NN.build(input_shape)
+NN.summary()
+print('Done')
 print('Training model...')
 if not args.dry:
-    trainX = [z_train, p_train] if evefn else train if evpfn else [mom_train, pid_train] if evpfnid else None
-    valX = [z_val, p_val] if evefn else val if evpfn else [mom_val, pid_val] if evpfnid else None
-    hc = model.fit(trainX, labels_train, epochs=args.epochs, batch_size=args.batch_size, validation_data=(valX, labels_val), verbose=1)
+    hc = NN.fit(trainX, labels_train, epochs=args.epochs, batch_size=args.batch_size, validation_data=(valX, labels_val))
 print('Done')
 
 
@@ -189,18 +135,18 @@ if args.dry:
     print(f"Saving training history to {os.path.join(args.output, args.filename +'_history.npz')}")
     print(f"Saving ROC curve to {os.path.join(args.output, args.filename + '_roc.npz')}")
 else:
-    model.save_weights(os.path.join(args.output, f'{args.filename}_model.h5'))
+    NN.save_weights(os.path.join(args.output, f'{args.filename}_model.h5'))
 
     loss_history, val_loss_history = hc.history['loss'], hc.history['val_loss']
     acc_history, val_acc_history = hc.history['acc'], hc.history['val_acc' ]
     np.savez_compressed(os.path.join(args.output, f'{args.filename}_history'), loss=np.array(loss_history), val_loss=np.array(val_loss_history), acc=np.array(acc_history), val_acc=np.array(val_acc_history))
 
     if evpfn:
-        preds = model.predict(test, batch_size=args.batch_size)
+        preds = NN.predict(test, batch_size=args.batch_size)
     elif evpfnid:
-        preds = model.predict([mom_test, pid_test], batch_size=args.batch_size)
+        preds = NN.predict([mom_test, pid_test], batch_size=args.batch_size)
     else:
-        preds = model.predict([z_test, p_test], batch_size=args.batch_size)
+        preds = NN.predict([z_test, p_test], batch_size=args.batch_size)
 
     fp, tp, threshs = roc_curve(labels_test[:,1], preds[:,1])
     np.savez_compressed(os.path.join(args.output, f'{args.filename}_roc'), tp=tp, fp=fp)
